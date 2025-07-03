@@ -17,12 +17,9 @@ const client = new Client({
   ],
 });
 
-// IDs reais do seu servidor (substitua pelos corretos)
-const CANAL_BOAS_VINDAS = "1390150562170929215";
-const CANAL_REGRAS = "1390065847632138282";
-const CANAL_LOJA = "1390065847896248446";
+const CANAL_BOAS_VINDAS = "1390150562170929215"; // ajuste conforme necessário
 
-// Função de envio com retry para erros como 502
+// Função para enviar mensagem com retry em caso de erro 502
 async function sendWithRetry(channel, message, retries = 2) {
   try {
     await channel.send(message);
@@ -38,7 +35,6 @@ async function sendWithRetry(channel, message, retries = 2) {
 
 client.on("ready", () => {
   console.log(`✅ Bot online como ${client.user.tag}`);
-  console.log(`📡 Conectado a ${client.guilds.cache.size} servidores.`);
 });
 
 client.on("guildMemberAdd", async (member) => {
@@ -46,23 +42,17 @@ client.on("guildMemberAdd", async (member) => {
   if (!canal || !canal.isTextBased()) return;
 
   const embed = new EmbedBuilder()
-    .setTitle("🥳 Bem-vindo(a) ao PortalStore!")
-    .setDescription(
-      `👤 Olá, <@${member.id}>!\n\n` +
-        `📜 Leia as regras em <#${CANAL_REGRAS}>\n` +
-        `✅ Verifique-se para acessar os canais\n` +
-        `🛍️ Confira os produtos no canal <#${CANAL_LOJA}>\n\n` +
-        `Se precisar de ajuda, chame um staff 👨‍💻`
-    )
-    .setThumbnail(
-      member.user.displayAvatarURL({ dynamic: true }) || "https://via.placeholder.com/150"
-    )
+    .setTitle("Boas Vindas")
     .setColor(0x8a2be2)
-    .setFooter({ text: `ID: ${member.id}` });
+    .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+    .setDescription(
+      `👤 **ID do usuário:** ${member.id}\n` +
+        `👥 **Membros atualmente:** ${member.guild.memberCount} membros.`
+    );
 
   const botoes = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setLabel("🛍️ Compre Aqui")
+      .setLabel("🛒 Compre Aqui")
       .setStyle(ButtonStyle.Link)
       .setURL("https://sualoja.com"),
 
@@ -80,15 +70,4 @@ client.on("guildMemberAdd", async (member) => {
   await sendWithRetry(canal, { embeds: [embed], components: [botoes] });
 });
 
-client.on("messageCreate", async (message) => {
-  if (message.content === "!ping") {
-    try {
-      await message.channel.send("Pong!");
-    } catch (err) {
-      console.error("❌ Erro ao responder !ping:", err);
-    }
-  }
-});
-
 client.login(process.env.TOKEN);
-

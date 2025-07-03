@@ -19,7 +19,7 @@ const client = new Client({
 
 const CANAL_BOAS_VINDAS = "1390150562170929215"; // ajuste conforme necessário
 
-// Função para enviar mensagem com retry em caso de erro 502
+// Função para envio com retry em caso de erro 502
 async function sendWithRetry(channel, message, retries = 2) {
   try {
     await channel.send(message);
@@ -68,6 +68,19 @@ client.on("guildMemberAdd", async (member) => {
   );
 
   await sendWithRetry(canal, { embeds: [embed], components: [botoes] });
+});
+
+// Comando !ping
+client.on("messageCreate", async (message) => {
+  if (message.author.bot) return;
+
+  if (message.content.toLowerCase() === "!ping") {
+    try {
+      await message.channel.send("🏓 Pong!");
+    } catch (err) {
+      console.error("❌ Erro ao responder !ping:", err);
+    }
+  }
 });
 
 client.login(process.env.TOKEN);

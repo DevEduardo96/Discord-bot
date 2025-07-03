@@ -17,9 +17,13 @@ const client = new Client({
   ],
 });
 
-const CANAL_BOAS_VINDAS = "1390150562170929215"; // ajuste conforme necessário
+// Canal de boas-vindas (ajuste para seu canal real)
+const CANAL_BOAS_VINDAS = "1390150562170929215";
 
-// Função para envio com retry em caso de erro 502
+// Proteção: evitar múltiplos registros
+let jaRegistrouBoasVindas = false;
+
+// Função para envio com retry (ex: erro 502)
 async function sendWithRetry(channel, message, retries = 2) {
   try {
     await channel.send(message);
@@ -33,42 +37,52 @@ async function sendWithRetry(channel, message, retries = 2) {
   }
 }
 
-client.on("ready", () => {
+client.once("ready", () => {
   console.log(`✅ Bot online como ${client.user.tag}`);
 });
 
-client.on("guildMemberAdd", async (member) => {
-  const canal = member.guild.channels.cache.get(CANAL_BOAS_VINDAS);
-  if (!canal || !canal.isTextBased()) return;
+// Usar once para evitar múltiplos listeners duplicados
+if (!jaRegistrouBoasVindas) {
+  jaRegistrouBoasVindas = true;
 
-  const embed = new EmbedBuilder()
-    .setTitle("Boas Vindas")
-    .setColor(0x8a2be2)
-    .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
-    .setDescription(
-      `👤 **ID do usuário:** ${member.id}\n` +
-        `👥 **Membros atualmente:** ${member.guild.memberCount} membros.`
+  client.on("guildMemberAdd", async (member) => {
+    console.log(`➡️ Novo membro entrou: ${member.user.tag} (${member.id})`);
+
+    const canal = member.guild.channels.cache.get(CANAL_BOAS_VINDAS);
+    if (!canal || !canal.isTextBased()) {
+      console.warn("❌ Canal de boas-vindas não encontrado ou inválido.");
+      return;
+    }
+
+    const embed = new EmbedBuilder()
+      .setTitle("Boas Vindas")
+      .setColor(0x8a2be2)
+      .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+      .setDescription(
+        `👤 **ID do usuário:** ${member.id}\n` +
+          `👥 **Membros atualmente:** ${member.guild.memberCount} membros.`
+      );
+
+    const botoes = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setLabel("🛒 Compre Aqui")
+        .setStyle(ButtonStyle.Link)
+        .setURL("https://sualoja.com"),
+
+      new ButtonBuilder()
+        .setLabel("📜 Termos")
+        .setStyle(ButtonStyle.Link)
+        .setURL("https://sualoja.com/termos"),
+
+      new ButtonBuilder()
+        .setLabel("🆘 Suporte")
+        .setStyle(ButtonStyle.Link)
+        .setURL("https://discord.gg/seuservidor")
     );
 
-  const botoes = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setLabel("🛒 Compre Aqui")
-      .setStyle(ButtonStyle.Link)
-      .setURL("https://sualoja.com"),
-
-    new ButtonBuilder()
-      .setLabel("📜 Termos")
-      .setStyle(ButtonStyle.Link)
-      .setURL("https://sualoja.com/termos"),
-
-    new ButtonBuilder()
-      .setLabel("🆘 Suporte")
-      .setStyle(ButtonStyle.Link)
-      .setURL("https://discord.gg/seuservidor")
-  );
-
-  await sendWithRetry(canal, { embeds: [embed], components: [botoes] });
-});
+    await sendWithRetry(canal, { embeds: [embed], components: [botoes] });
+  });
+}
 
 // Comando !ping
 client.on("messageCreate", async (message) => {

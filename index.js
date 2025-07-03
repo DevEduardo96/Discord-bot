@@ -13,11 +13,14 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent, // <- ESSENCIAL!
+    GatewayIntentBits.MessageContent,
   ],
 });
 
-const CANAL_BOAS_VINDAS = "id-do-canal-aqui"; // Altere para o ID do seu canal de boas-vindas
+// IDs reais do seu servidor (substitua pelos corretos)
+const CANAL_BOAS_VINDAS = "1390150562170929215";
+const CANAL_REGRAS = "1390065847632138282";
+const CANAL_LOJA = "1390065847896248446";
 
 client.on("ready", () => {
   console.log(`✅ Bot online como ${client.user.tag}`);
@@ -28,12 +31,16 @@ client.on("guildMemberAdd", async (member) => {
   if (!canal) return;
 
   const embed = new EmbedBuilder()
-    .setTitle("👋 Bem-vindo ao servidor!")
+    .setTitle("🥳 Bem-vindo(a) ao PortalStore!")
     .setDescription(
-      `👤 **Usuário:** <@${member.id}>\n🧑‍🤝‍🧑 **Membros atualmente:** ${member.guild.memberCount}`
+      `👤 Olá, <@${member.id}>!\n\n` +
+        `📜 Leia as regras em <#${CANAL_REGRAS}>\n` +
+        `✅ Verifique-se para acessar os canais\n` +
+        `🛍️ Confira os produtos no canal <#${CANAL_LOJA}>\n\n` +
+        `Se precisar de ajuda, chame um staff 👨‍💻`
     )
     .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
-    .setColor(0x8a2be2) // Roxo
+    .setColor(0x8a2be2)
     .setFooter({ text: `ID: ${member.id}` });
 
   const botoes = new ActionRowBuilder().addComponents(
